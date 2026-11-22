@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh-HK">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>課程及入學 | 香港建造學院 (Demo)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="demo.css?v=4">
+<link rel="stylesheet" href="hkic-shell.css?v=4">
+<script src="gate.js?v=4"></script><script src="demo.js?v=4"></script><script src="data.js?v=4"></script>
+</head>
+<body class="end-grey">
+<main id="main">
+  <div class="hero">
+    <div class="wrap">
+      <div>
+        <div class="crumb" style="padding-top:0"><a href="#">首頁</a><span>›</span>課程及入學</div>
+        <h1 class="h1">找到屬於你的<br>建造業路徑</h1>
+        <p class="lead">528 個課程，由入門、轉行到專業進修。搜尋課程、比較班期，一站完成報名。</p>
+        <form class="search" action="finder.html" data-pin="search">
+          <span data-i="search"></span>
+          <label class="sr" for="q">搜尋課程名稱、行業或課程編號</label>
+          <input id="q" name="q" placeholder="搜尋課程名稱、行業或課程編號，例如：水喉、ADBD">
+          <button class="btn sm">搜尋</button>
+        </form>
+        <div class="quick">熱門：
+          <a class="qlink" href="finder.html?mode=全日制">全日制</a>
+          <a class="qlink" href="finder.html?st=open">接受報名中</a>
+          <a class="qlink" href="finder.html?trade=安全">安全訓練</a>
+          <a class="qlink" href="finder.html?q=機械人">機械人</a>
+          <a class="qlink" href="finder.html?lang=英語">English</a>
+        </div>
+      </div>
+      <div class="hero-img"><img src="assets/top-banner-d.jpg" alt="香港建造學院學生於校園"></div>
+    </div>
+  </div>
+
+  <section data-pin="persona">
+    <div class="wrap">
+      <div class="sec-head"><div><h2 class="h2">你想找甚麼？</h2></div></div>
+      <div class="grid g4" id="personas"></div>
+    </div>
+  </section>
+
+  <section style="background:var(--bg)" data-pin="cats">
+    <div class="wrap">
+      <div class="sec-head"><div><h2 class="h2">課程類別</h2></div><a class="link" href="finder.html">瀏覽全部課程</a></div>
+      <div class="grid g5" id="cats"></div>
+    </div>
+  </section>
+
+  <section data-pin="intakes">
+    <div class="wrap">
+      <div class="sec-head"><div><h2 class="h2">接受報名中</h2></div><a class="link" href="finder.html?st=open">查看全部班期</a></div>
+      <div class="grid g4" id="soon"></div>
+    </div>
+  </section>
+
+  <section class="paths-sec" data-pin="paths">
+    <div class="wrap">
+      <div class="sec-head"><div><h2 class="h2">升學及晉升階梯</h2></div></div>
+      <div class="path-row"><h4>中學畢業生</h4>
+        <div class="path"><div class="step"><b>建造證書 / 文憑</b><small>全日制 · 1 年</small></div><div class="step"><b>高等文憑</b><small>QF 第 4 級 · 2 年</small></div><div class="step"><b>銜接學士學位</b><small>本地及海外大學</small></div><div class="step"><b>專業人士</b><small>監工 · 工程管理</small></div></div></div>
+      <div class="path-row"><h4>轉行 / 新入行</h4>
+        <div class="path"><div class="step"><b>技術培訓證書</b><small>全日制 · 免學費 有津貼</small></div><div class="step"><b>中級工藝測試</b><small>中工資歷</small></div><div class="step"><b>技術提升課程</b><small>兼讀制</small></div><div class="step"><b>大工 / 註冊技工</b><small>建造業職業資歷階梯</small></div></div></div>
+      <div class="path-row"><h4>在職人士</h4>
+        <div class="path"><div class="step"><b>技術提升</b><small>夜間 / 週末</small></div><div class="step"><b>專門行業管理及監督</b><small>專業進修</small></div><div class="step"><b>新科技課程</b><small>BIM · MiC · 機械人</small></div><div class="step"><b>大師級培訓</b><small>業界領袖</small></div></div></div>
+    </div>
+  </section>
+</main>
+<script>
+shell('課程及入學');
+const PERS=[
+ {id:'dse',img:'adv-dip-certs-d.jpg',t:'中學畢業，想入行',d:'文憑及高等文憑課程，免學費並提供津貼，畢業後可銜接學位。'},
+ {id:'change',img:'skill-training-d.jpg',t:'想轉行做建造業',d:'全日制技術培訓，數個月學成一門手藝，培訓期間有津貼。'},
+ {id:'upskill',img:'AGB21870.jpg',t:'在職，想進修升級',d:'夜間及週末兼讀課程，考取工藝測試、管理及新科技資歷。'},
+ {id:'safety',img:'Day_01_1790.jpg',t:'要考安全證書',d:'平安卡、銀卡及各類安全課程，每週多個班期，即揀即報。'}];
+document.getElementById('personas').innerHTML=PERS.map(p=>{
+  const n=PROGS.filter(x=>x.persona.includes(p.id)).length;
+  return `<a class="persona" href="finder.html?persona=${p.id}"><div class="ph"><img src="assets/${p.img}" alt=""></div><div class="pb"><h3>${p.t}</h3><p>${p.d}</p><span class="link">查看推介課程</span></div></a>`}).join('');
+document.getElementById('cats').innerHTML=CATS.map(c=>`<a class="cat" href="finder.html?cat=${c.id}"><h3>${c.name}</h3><div class="cnt"><span class="n">${c.n}</span>個課程</div><div class="open">${c.open} 個接受報名</div></a>`).join('');
+document.getElementById('soon').innerHTML=PROGS.filter(p=>p.st==='open'||p.st==='few').sort((a,b)=>a.next.localeCompare(b.next)).slice(0,4).map(p=>`<a class="card intake" href="${p.url||'programme-adbd.html'}"><span class="d">${catName(p.cat)}</span><b style="font-size:18px;line-height:1.4">${p.name}</b><span style="font-size:14px;color:var(--ink-2)">${fmtDate(p.next)} 開課 · ${p.mode}</span><span><span class="st ${p.st}">${ST[p.st]}</span></span></a>`).join('');
+icons();
+</script>
+</body>
+</html>

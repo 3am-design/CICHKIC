@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="zh-HK">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>課程搜尋 | 香港建造學院 (Demo)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="demo.css?v=4">
+<link rel="stylesheet" href="hkic-shell.css?v=4">
+<script src="gate.js?v=4"></script><script src="demo.js?v=4"></script><script src="data.js?v=4"></script>
+</head>
+<body>
+<main id="main">
+  <div class="finder-head">
+    <div class="wrap">
+      <div class="crumb"><a href="programmes.html">首頁</a><span>›</span><a href="programmes.html">課程及入學</a><span>›</span>課程搜尋</div>
+      <h1 class="h1">課程搜尋</h1>
+      <div class="search" data-pin="search">
+        <span data-i="search"></span>
+        <label class="sr" for="q">搜尋課程名稱、行業或課程編號</label>
+        <input id="q" placeholder="搜尋課程名稱、行業或課程編號">
+        <button class="btn sm" id="go">搜尋</button>
+      </div>
+    </div>
+  </div>
+  <div class="wrap finder">
+    <aside class="filters" aria-label="篩選" data-pin="filters">
+      <h2>篩選 <button id="clear">清除全部</button></h2>
+      <div class="fg"><h3>報名狀態</h3>
+        <label><input type="checkbox" name="st" value="open">接受報名<small data-c="st:open"></small></label>
+        <label><input type="checkbox" name="st" value="few">尚餘少量名額<small data-c="st:few"></small></label>
+        <label><input type="checkbox" name="st" value="soon">即將接受報名<small data-c="st:soon"></small></label>
+        <label><input type="checkbox" name="hidefull" value="1">隱藏額滿班期</label>
+      </div>
+      <div class="fg"><h3>修讀模式</h3>
+        <div class="seg" id="mode"><button data-v="" class="on">全部</button><button data-v="全日制">全日制</button><button data-v="兼讀制">兼讀制</button></div>
+      </div>
+      <div class="fg"><h3>開課月份</h3>
+        <select id="month"><option value="">任何時間</option><option value="2026-11">2026年11月</option><option value="2026-12">2026年12月</option><option value="2027-01">2027年1月</option><option value="2027-02">2027年2月</option><option value="2027-09">2027年9月</option></select>
+      </div>
+      <div class="fg"><h3>行業 / 興趣</h3><div id="trades"></div></div>
+      <div class="fg"><h3>教學語言</h3>
+        <label><input type="checkbox" name="lang" value="粵語">粵語</label>
+        <label><input type="checkbox" name="lang" value="英語">英語 English</label>
+        <label><input type="checkbox" name="lang" value="普通話">普通話</label>
+      </div>
+      <div class="fg"><h3>課程類別</h3><select id="cat"><option value="">全部類別</option></select></div>
+    </aside>
+    <div>
+      <div class="mobile-filter"><button class="chip on"><span data-i="filter" style="width:16px;display:inline-flex"></span>篩選 (2)</button><button class="chip">接受報名</button><button class="chip">全日制</button><button class="chip">兼讀制</button><button class="chip">英語</button></div>
+      <div class="results-bar" data-pin="count">
+        <div class="count" aria-live="polite"><b id="n">0</b> 個課程</div>
+        <label data-pin="sort">排序：<select id="sort"><option value="next">最快開課</option><option value="name">課程名稱</option><option value="code">課程編號</option><option value="intakes">班期數目</option></select></label>
+      </div>
+      <div class="active-chips" id="chips"></div>
+      <div id="list"></div>
+    </div>
+  </div>
+</main>
+<script>
+shell('課程及入學');
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+$('#trades').innerHTML=TRADES.map(t=>`<label><input type="checkbox" name="trade" value="${t}">${t}<small>${PROGS.filter(p=>p.trade.includes(t)).length}</small></label>`).join('');
+$('#cat').innerHTML+=CATS.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+$$('[data-c]').forEach(el=>{const[k,v]=el.dataset.c.split(':');el.textContent=PROGS.filter(p=>p[k]===v).length});
+const PNAME={dse:'中學畢業，想入行',change:'想轉行做建造業',upskill:'在職，想進修升級',safety:'要考安全證書',ncs:'非華語人士'};
+const url=new URLSearchParams(location.search);
+let mode=url.get('mode')||'', persona=url.get('persona')||'';
+if(url.get('q')) $('#q').value=url.get('q');
+if(url.get('cat')) $('#cat').value=url.get('cat');
+['st','trade','lang'].forEach(k=>{const v=url.get(k); if(v) $$(`input[name=${k}][value="${v}"]`).forEach(i=>i.checked=true)});
+$$('#mode button').forEach(b=>{b.classList.toggle('on',b.dataset.v===mode); b.onclick=()=>{mode=b.dataset.v;$$('#mode button').forEach(x=>x.classList.toggle('on',x===b));run()}});
+const vals=n=>$$(`input[name=${n}]:checked`).map(i=>i.value);
+function run(){
+  const q=$('#q').value.trim().toLowerCase(), st=vals('st'), tr=vals('trade'), lg=vals('lang'), hidefull=vals('hidefull').length, m=$('#month').value, cat=$('#cat').value;
+  let r=PROGS.filter(p=>(!q||(p.name+p.code+p.trade.join()+catName(p.cat)).toLowerCase().includes(q))
+    &&(!st.length||st.includes(p.st))&&(!hidefull||p.st!=='full')&&(!mode||p.mode===mode)
+    &&(!tr.length||tr.some(t=>p.trade.includes(t)))&&(!lg.length||lg.some(l=>p.lang.includes(l)))
+    &&(!m||p.next.startsWith(m))&&(!cat||p.cat===cat)&&(!persona||p.persona.includes(persona)));
+  const s=$('#sort').value;
+  r.sort((a,b)=>s==='name'?a.name.localeCompare(b.name,'zh-HK'):s==='code'?a.code.localeCompare(b.code):s==='intakes'?b.intakes-a.intakes:((a.next||'9')).localeCompare(b.next||'9'));
+  $('#n').textContent=r.length;
+  const chips=[]; if(persona)chips.push(['persona',PNAME[persona]]); if(q)chips.push(['q','「'+q+'」']); if(mode)chips.push(['mode',mode]);
+  st.forEach(v=>chips.push(['st:'+v,ST[v]])); tr.forEach(v=>chips.push(['trade:'+v,v])); lg.forEach(v=>chips.push(['lang:'+v,v])); if(m)chips.push(['month',$('#month').selectedOptions[0].text]); if(cat)chips.push(['cat',catName(cat)]);
+  $('#chips').innerHTML=chips.map(([k,t])=>`<button class="chip on" data-k="${k}">${t} <span class="x">✕</span></button>`).join('');
+  $$('#chips .chip').forEach(c=>c.onclick=()=>{const[k,v]=c.dataset.k.split(':');
+    if(k==='persona')persona=''; else if(k==='q')$('#q').value=''; else if(k==='mode'){mode='';$$('#mode button').forEach(x=>x.classList.toggle('on',x.dataset.v===''))}
+    else if(k==='month')$('#month').value=''; else if(k==='cat')$('#cat').value=''; else $$(`input[name=${k}][value="${v}"]`).forEach(i=>i.checked=false); run()});
+  $('#list').innerHTML=r.length?r.map((p,i)=>`<a class="card res"${i===0?' data-pin="row"':''} href="${p.url||'programme-adbd.html'}">
+    <div><div class="code">${p.code} · ${catName(p.cat)}</div><h3>${p.name}</h3>
+      <div class="tags">${p.trade.map(t=>`<span class="tag o">${t}</span>`).join('')}${p.sub?`<span class="tag m">${p.sub}</span>`:''}</div>
+      <div class="facts"><span><span data-i="cal"></span>${p.mode} · ${p.dur}</span><span><span data-i="lang"></span>${p.lang.join(' / ')}</span>${p.courses>1?`<span class="multi">${p.courses} 個課程選擇</span>`:''}</div></div>
+    <div class="side"><small>最近開課</small><b>${fmtDate(p.next)}</b><span><span class="st ${p.st}"${i===0?' data-pin="status"':''}>${ST[p.st]}</span></span><small>${p.intakes?`共 ${p.intakes} 個班期`:'登記興趣，開班時通知你'}</small></div></a>`).join('')
+    :`<div class="empty"><h3>找不到相關課程</h3><p>試試清除部分篩選，或致電 2100 9000 查詢。</p></div>`;
+  icons($('#list'));
+}
+$$('.filters input,.filters select,#sort').forEach(e=>e.onchange=run);
+$('#q').oninput=run; $('#go').onclick=run;
+$('#clear').onclick=()=>{$$('.filters input').forEach(i=>i.checked=false);$('#month').value='';$('#cat').value='';$('#q').value='';persona='';mode='';$$('#mode button').forEach(x=>x.classList.toggle('on',x.dataset.v===''));run()};
+run();
+</script>
+</body>
+</html>

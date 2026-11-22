@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="zh-HK">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>搜尋結果 | 香港建造學院 (Demo)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="demo.css?v=4">
+<link rel="stylesheet" href="hkic-shell.css?v=4">
+<script src="gate.js?v=4"></script><script src="demo.js?v=4"></script><script src="data.js?v=4"></script>
+</head>
+<body class="end-grey">
+<main id="main">
+  <div class="finder-head" style="padding-bottom:0">
+    <div class="wrap">
+      <div class="crumb"><a href="programmes.html">首頁</a><span>›</span>搜尋結果</div>
+      <h1 class="h1">搜尋結果</h1>
+      <form class="search" id="f" role="search" data-pin="search">
+        <span data-i="search"></span>
+        <label class="sr" for="q">搜尋全站</label>
+        <input id="q" name="q" placeholder="搜尋課程、行業、課程編號或資訊">
+        <button class="btn sm">搜尋</button>
+      </form>
+      <div class="s-tabs" role="tablist" aria-label="結果類別" id="tabs" data-pin="tabs"></div>
+    </div>
+  </div>
+  <div class="wrap s-body">
+    <div id="out"></div>
+    <aside class="s-side" data-pin="side">
+      <div class="card">
+        <h3>想按條件找課程？</h3>
+        <p>在課程搜尋按報名狀態、修讀模式、開課月份及行業篩選。</p>
+        <a class="btn ghost sm" id="tofinder" href="finder.html">前往課程搜尋</a>
+      </div>
+      <div class="card">
+        <h3>需要協助？</h3>
+        <p>課程查詢熱線 2100 9000，或透過 WhatsApp 與我們聯絡。</p>
+        <a class="btn sm" href="#">WhatsApp 查詢</a>
+      </div>
+      <div class="card">
+        <h3>熱門搜尋</h3>
+        <div class="pop" id="pop"></div>
+      </div>
+    </aside>
+  </div>
+</main>
+<script>
+shell('');
+const $=s=>document.querySelector(s);
+const url=new URLSearchParams(location.search);
+let tab=url.get('type')||'all';
+$('#q').value=url.has('q')?url.get('q'):'安全';
+$('#pop').innerHTML=POPULAR.map(t=>`<a class="chip" href="search.html?q=${encodeURIComponent(t)}">${t}</a>`).join('');
+const card=(p,i)=>`<a class="card res s"${i===0?' data-pin="prog"':''} href="${p.url||'programme-adbd.html'}">
+  <div><div class="code">${p.code} · ${catName(p.cat)}</div><h3>${mark(p.name,R.q,R.alt)}</h3>
+    <div class="tags">${p.trade.map(t=>`<span class="tag o">${mark(t,R.q,R.alt)}</span>`).join('')}</div>
+    <div class="facts"><span><span data-i="cal"></span>${p.mode} · ${p.dur}</span><span><span data-i="lang"></span>${p.lang.join(' / ')}</span>${p.sub?`<span>${p.sub}</span>`:''}</div></div>
+  <div class="side"><small>最近開課</small><b>${fmtDate(p.next)}</b><span><span class="st ${p.st}">${ST[p.st]}</span></span></div></a>`;
+const item=(p,i)=>`<a class="s-item"${i===0?' data-pin="page"':''} href="#"><div class="crumbs"><span class="type">${PTYPE[p.type]}</span>${p.crumb}</div><h3>${mark(p.t,R.q,R.alt)}</h3><p>${mark(p.d,R.q,R.alt)}</p></a>`;
+let R;
+function run(){
+  R=siteSearch($('#q').value);
+  const enc=encodeURIComponent($('#q').value.trim());
+  $('#tofinder').href='finder.html'+(enc?'?q='+enc:'');
+  const by=t=>R.pages.filter(p=>p.type===t);
+  const n={all:R.progs.length+R.pages.length,prog:R.progs.length,page:by('page').length,faq:by('faq').length,news:by('news').length};
+  $('#tabs').innerHTML=[['all','全部'],['prog','課程'],['page','頁面'],['faq','常見問題'],['news','消息及活動']]
+    .map(([k,t])=>`<button role="tab" aria-selected="${k===tab}" class="${k===tab?'on':''}" data-t="${k}">${t}<small>${n[k]}</small></button>`).join('');
+  document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;run()});
+  let h=`<p class="s-count" data-pin="count">「<b>${esc($('#q').value.trim())}</b>」共 <b>${n.all}</b> 個結果</p>`;
+  if(R.alt) h+=`<p class="s-alt">已包括「${esc(R.alt)}」的結果。</p>`;
+  if(!n.all){h+=`<div class="empty card"><h3>找不到「${esc($('#q').value.trim())}」的相關結果</h3><p>試試較短的關鍵字、課程編號，或使用課程搜尋按條件篩選。</p></div>`}
+  else if(tab==='all'){
+    if(R.progs.length) h+=`<section class="s-group" style="padding:0" data-pin="progs"><h2>課程 · ${R.progs.length}${R.progs.length>3?`<a class="link" href="finder.html?q=${enc}">在課程搜尋查看全部</a>`:''}</h2>${R.progs.slice(0,3).map(card).join('')}</section>`;
+    if(R.pages.length) h+=`<section class="s-group" style="padding:0" data-pin="pages"><h2>其他資訊 · ${R.pages.length}</h2>${R.pages.map(item).join('')}</section>`;
+  } else if(tab==='prog') h+=R.progs.map(card).join('');
+  else h+=by(tab).map(item).join('')||'<div class="empty">此類別沒有相關結果</div>';
+  $('#out').innerHTML=h; icons($('#out'));
+}
+$('#f').onsubmit=e=>{e.preventDefault();tab='all';history.replaceState(null,'','?q='+encodeURIComponent($('#q').value.trim()));run()};
+run();
+</script>
+</body>
+</html>

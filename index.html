@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>HKIC Website Enhancement | Tender Design Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="gate.js?v=4" data-gate-index></script>
+<style>
+:root{--teal:#00807d;--teal-d:#005f5c;--ink:#1b1b1b;--ink-2:#474747;--line:#e1e1e1}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:"Inter","Noto Sans TC",sans-serif;color:var(--ink);background:#fff}
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+/* password page */
+.lock{min-height:100svh;display:grid;place-items:center;background:#f5f5f5;padding:24px}
+.lock form{display:grid;gap:14px;width:min(100%,300px)}
+.lock img{width:170px;margin:0 auto 28px}
+.lock input,.lock button{width:100%;min-height:48px;padding:10px 16px;font:inherit;font-size:16px;border-radius:99px}
+.lock input{background:#fff;border:1px solid #c9d3d2}
+.lock input:focus{outline:2px solid var(--teal);outline-offset:1px}
+.lock button{background:var(--teal);color:#fff;border:0;font-weight:700;cursor:pointer}
+.lock p{margin:0;min-height:22px;color:#c40000;font-size:14px;text-align:center}
+/* link list */
+.list{min-height:100svh;padding:clamp(36px,5vw,80px) clamp(20px,5vw,80px) 80px;background:#33403f;color:#fff}
+.list header{display:flex;flex-direction:column;align-items:center;gap:14px;margin:0 0 clamp(36px,5vw,64px);text-align:center}
+.list h1{margin:0;font-size:15px;font-weight:500;letter-spacing:.13em;text-transform:uppercase}
+.list header p{margin:0;font-size:14px;color:#c9d6d5}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(32px,4vw,64px) clamp(32px,5vw,80px);max-width:1240px;margin:auto}
+.cover{display:block;aspect-ratio:16/10;overflow:hidden;background:#fff}
+.cover img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+.item h2{margin:20px 0 6px;font-size:26px;font-weight:500}
+.item .zh{font-family:"Noto Sans TC",sans-serif;font-size:16px;color:#c9d6d5;margin:0 0 10px}
+.item a.link{display:block;color:#fff;text-decoration:none;padding:4px 0}
+.item a.link:hover h2{text-decoration:underline;text-underline-offset:4px}
+.url{display:block;color:#9fe0d6;font-size:13px;overflow-wrap:anywhere}
+.list footer{max-width:1240px;margin:56px auto 0;padding-top:20px;border-top:1px solid rgba(255,255,255,.18);font-size:13px;color:#c9d6d5}
+@media(max-width:720px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<noscript>Enable JavaScript to view the prototype.</noscript>
+<script>
+(() => {
+  const app = document.getElementById("app");
+  const G = window.HKIC_GATE;
+  const pages = [
+    ["programmes.html", "Programme & Admission", "課程及入學", "index"],
+    ["finder.html", "Programme Finder", "課程搜尋", "finder"],
+    ["programme-adbd.html", "Programme page · single course", "屋宇建造監工高等文憑", "programme-adbd"],
+    ["programme-multi.html", "Programme page · multiple courses", "屋宇水喉安裝證書", "programme-multi"],
+    ["programmes.html?search=", "Search panel", "搜尋面板", "searchpanel"],
+    ["search.html", "Site search results", "搜尋結果", "search"]
+  ];
+  const q = new URLSearchParams(location.search);
+
+  function openList() {
+    const next = q.get("next");
+    if (next && /^[\w.-]+\.html(\?.*)?$/.test(next)) { location.replace(next); return; }
+    document.title = "HKIC Website Enhancement | Prototype pages";
+    app.innerHTML = `<main class="list">
+      <header><h1>HKIC Website Enhancement</h1><p>Tender design prototype · Responsive on desktop, tablet and mobile</p></header>
+      <div class="grid">${pages.map(([href, en, zh, img]) => `<section class="item">
+        <a class="cover" href="${href}" aria-label="${en}"><img src="assets/preview/${img}.jpg" alt=""></a>
+        <a class="link" href="${href}"><h2>${en}</h2><p class="zh">${zh}</p></a>
+      </section>`).join("")}</div>
+      <footer>Prototype content is illustrative. Programme titles are from hkic.edu.hk; class dates, places and statuses are sample data.</footer>
+    </main>`;
+
+  }
+
+  function openLock() {
+    app.innerHTML = `<main class="lock">
+      <form>
+        <img src="assets/logo_hkic.svg" alt="香港建造學院 Hong Kong Institute of Construction">
+        <label for="pw" class="visually-hidden">Password</label>
+        <input id="pw" type="password" placeholder="Password" autocomplete="current-password" required>
+        <button type="submit">Enter</button>
+        <p role="status"></p>
+      </form>
+    </main>`;
+    app.querySelector("form").addEventListener("submit", async e => {
+      e.preventDefault();
+      const f = document.getElementById("pw"), st = app.querySelector("[role=status]");
+      const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(f.value));
+      const hex = Array.from(new Uint8Array(buf), b => b.toString(16).padStart(2, "0")).join("");
+      if (hex === G.HASH) { G.remember(); openList(); return; }
+      st.textContent = "Incorrect password.";
+      f.select();
+    });
+  }
+
+  if (q.has("lock")) openLock();
+  else if (G.unlocked()) openList();
+  else openLock();
+})();
+</script>
+</body>
+</html>
